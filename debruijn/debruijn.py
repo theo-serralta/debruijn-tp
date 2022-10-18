@@ -88,16 +88,14 @@ def build_graph(kmer_dict):
 def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
     pass
 
-def std(data):
-    pass
-
 
 def select_best_path(graph, path_list, path_length, weight_avg_list, 
                      delete_entry_node=False, delete_sink_node=False):
     pass
 
 def path_average_weight(graph, path):
-    pass
+    """Compute the weight of a path"""
+    return statistics.mean([d["weight"] for (u, v, d) in graph.subgraph(path).edges(data=True)])
 
 def solve_bubble(graph, ancestor_node, descendant_node):
     pass
