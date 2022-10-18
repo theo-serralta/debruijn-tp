@@ -23,6 +23,7 @@ import random
 random.seed(9001)
 from random import randint
 import statistics
+import textwrap
 import matplotlib.pyplot as plt
 matplotlib.use("Agg")
 
@@ -63,9 +64,9 @@ def get_arguments():
                         default=22, help="k-mer size (default 22)")
     parser.add_argument('-o', dest='output_file', type=str,
                         default=os.curdir + os.sep + "contigs.fasta",
-                        help="Output contigs in fasta file")
+                        help="Output contigs in fasta file (default contigs.fasta)")
     parser.add_argument('-f', dest='graphimg_file', type=str,
-                        help="Save graph as image (png)")
+                        help="Save graph as an image (png)")
     return parser.parse_args()
 
 
@@ -122,10 +123,6 @@ def save_contigs(contigs_list, output_file):
     pass
 
 
-def fill(text, width=80):
-    """Split text with a line return to respect fasta format"""
-    return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
-
 def draw_graph(graph, graphimg_file):
     """Draw the graph
     """                                    
@@ -146,13 +143,6 @@ def draw_graph(graph, graphimg_file):
     plt.savefig(graphimg_file)
 
 
-def save_graph(graph, graph_file):
-    """Save the graph with pickle
-    """
-    with open(graph_file, "wt") as save:
-            pickle.dump(graph, save)
-
-
 #==============================================================
 # Main program
 #==============================================================
@@ -169,9 +159,6 @@ def main():
     # Plot the graph
     # if args.graphimg_file:
     #     draw_graph(graph, args.graphimg_file)
-    # Save the graph in file
-    # if args.graph_file:
-    #     save_graph(graph, args.graph_file)
 
 
 if __name__ == '__main__':
