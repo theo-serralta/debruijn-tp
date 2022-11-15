@@ -36,10 +36,14 @@ __maintainer__ = "Your Name"
 __email__ = "your@email.fr"
 __status__ = "Developpement"
 
-def isfile(path):
+def isfile(path): # pragma: no cover
     """Check if path is an existing file.
-      :Parameters:
-          path: Path to the file
+
+    :param path: (str) Path to the file
+    
+    :raises ArgumentTypeError: If file doesn't exist
+    
+    :return: (str) Path 
     """
     if not os.path.isfile(path):
         if os.path.isdir(path):
@@ -50,9 +54,10 @@ def isfile(path):
     return path
 
 
-def get_arguments():
+def get_arguments(): # pragma: no cover
     """Retrieves the arguments of the program.
-      Returns: An object that contains the arguments
+
+    :return: An object that contains the arguments
     """
     # Parsing arguments
     parser = argparse.ArgumentParser(description=__doc__, usage=
@@ -71,61 +76,152 @@ def get_arguments():
 
 
 def read_fastq(fastq_file):
+    """Extract reads from fastq files.
+
+    :param fastq_file: (str) Path to the fastq file.
+    :return: A generator object that iterate the read sequences. 
+    """
     pass
 
 
 def cut_kmer(read, kmer_size):
+    """Cut read into kmers of size kmer_size.
+    
+    :param read: (str) Sequence of a read.
+    :return: A generator object that iterate the kmers of of size kmer_size.
+    """
     pass
 
 
 def build_kmer_dict(fastq_file, kmer_size):
+    """Build a dictionnary object of all kmer occurrences in the fastq file
+
+    :param fastq_file: (str) Path to the fastq file.
+    :return: A dictionnary object that identify all kmer occurrences.
+    """
     pass
 
 
 def build_graph(kmer_dict):
+    """Build the debruijn graph
+
+    :param kmer_dict: A dictionnary object that identify all kmer occurrences.
+    :return: A directed graph (nx) of all kmer substring and weight (occurrence).
+    """
     pass
 
 
 def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
+    """Remove a list of path in a graph. A path is set of connected node in
+    the graph
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :param path_list: (list) A list of path
+    :param delete_entry_node: (boolean) True->We remove the first node of a path 
+    :param delete_sink_node: (boolean) True->We remove the last node of a path
+    :return: (nx.DiGraph) A directed graph object
+    """
     pass
 
 
 def select_best_path(graph, path_list, path_length, weight_avg_list, 
                      delete_entry_node=False, delete_sink_node=False):
+    """Select the best path between different paths
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :param path_list: (list) A list of path
+    :param path_length_list: (list) A list of length of each path
+    :param weight_avg_list: (list) A list of average weight of each path
+    :param delete_entry_node: (boolean) True->We remove the first node of a path 
+    :param delete_sink_node: (boolean) True->We remove the last node of a path
+    :return: (nx.DiGraph) A directed graph object
+    """
     pass
 
 def path_average_weight(graph, path):
-    """Compute the weight of a path"""
+    """Compute the weight of a path
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :param path: (list) A path consist of a list of nodes
+    :return: (float) The average weight of a path
+    """
     return statistics.mean([d["weight"] for (u, v, d) in graph.subgraph(path).edges(data=True)])
 
 def solve_bubble(graph, ancestor_node, descendant_node):
+    """Explore and solve bubble issue
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :param ancestor_node: (str) An upstream node in the graph 
+    :param descendant_node: (str) A downstream node in the graph
+    :return: (nx.DiGraph) A directed graph object
+    """
     pass
 
 def simplify_bubbles(graph):
+    """Detect and explode bubbles
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :return: (nx.DiGraph) A directed graph object
+    """
     pass
 
 def solve_entry_tips(graph, starting_nodes):
+    """Remove entry tips
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :return: (nx.DiGraph) A directed graph object
+    """
     pass
 
 def solve_out_tips(graph, ending_nodes):
+    """Remove out tips
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :return: (nx.DiGraph) A directed graph object
+    """
     pass
 
 def get_starting_nodes(graph):
+    """Get nodes without predecessors
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :return: (list) A list of all nodes without predecessors
+    """
     pass
 
 def get_sink_nodes(graph):
+    """Get nodes without successors
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :return: (list) A list of all nodes without successors
+    """
     pass
 
 def get_contigs(graph, starting_nodes, ending_nodes):
+    """Extract the contigs from the graph
+
+    :param graph: (nx.DiGraph) A directed graph object 
+    :param starting_nodes: (list) A list of nodes without predecessors
+    :param ending_nodes: (list) A list of nodes without successors
+    :return: (list) List of [contiguous sequence and their length]
+    """
     pass
 
 def save_contigs(contigs_list, output_file):
+    """Write all contigs in fasta format
+
+    :param contig_list: (list) List of [contiguous sequence and their length]
+    :param output_file: (str) Path to the output file
+    """
     pass
 
 
-def draw_graph(graph, graphimg_file):
+def draw_graph(graph, graphimg_file): # pragma: no cover
     """Draw the graph
-    """                                    
+
+    :param graph: (nx.DiGraph) A directed graph object
+    :param graphimg_file: (str) Path to the output file
+    """                                   
     fig, ax = plt.subplots()
     elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] > 3]
     #print(elarge)
@@ -146,7 +242,7 @@ def draw_graph(graph, graphimg_file):
 #==============================================================
 # Main program
 #==============================================================
-def main():
+def main(): # pragma: no cover
     """
     Main program function
     """
@@ -161,5 +257,5 @@ def main():
     #     draw_graph(graph, args.graphimg_file)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     main()
