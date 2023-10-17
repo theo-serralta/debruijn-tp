@@ -16,7 +16,8 @@
 import argparse
 import os
 import sys
-import networkx as nx
+from pathlib import Path
+from networkx import DiGraph, all_simple_paths, lowest_common_ancestor, has_path, random_layout, draw, spring_layout
 import matplotlib
 from operator import itemgetter
 import random
@@ -25,6 +26,7 @@ from random import randint
 import statistics
 import textwrap
 import matplotlib.pyplot as plt
+from typing import Iterator, Dict, List
 matplotlib.use("Agg")
 
 __author__ = "Your Name"
@@ -36,22 +38,23 @@ __maintainer__ = "Your Name"
 __email__ = "your@email.fr"
 __status__ = "Developpement"
 
-def isfile(path): # pragma: no cover
+def isfile(path: str) -> Path:  # pragma: no cover
     """Check if path is an existing file.
 
     :param path: (str) Path to the file
-    
-    :raises ArgumentTypeError: If file doesn't exist
-    
-    :return: (str) Path 
+
+    :raises ArgumentTypeError: If file does not exist
+
+    :return: (Path) Path object of the input file
     """
-    if not os.path.isfile(path):
-        if os.path.isdir(path):
-            msg = "{0} is a directory".format(path)
+    myfile = Path(path)
+    if not myfile.is_file():
+        if myfile.is_dir():
+            msg = f"{myfile.name} is a directory."
         else:
-            msg = "{0} does not exist.".format(path)
+            msg = f"{myfile.name} does not exist."
         raise argparse.ArgumentTypeError(msg)
-    return path
+    return myfile
 
 
 def get_arguments(): # pragma: no cover
@@ -67,33 +70,33 @@ def get_arguments(): # pragma: no cover
                         required=True, help="Fastq file")
     parser.add_argument('-k', dest='kmer_size', type=int,
                         default=22, help="k-mer size (default 22)")
-    parser.add_argument('-o', dest='output_file', type=str,
-                        default=os.curdir + os.sep + "contigs.fasta",
+    parser.add_argument('-o', dest='output_file', type=Path,
+                        default=Path(os.curdir + os.sep + "contigs.fasta"),
                         help="Output contigs in fasta file (default contigs.fasta)")
-    parser.add_argument('-f', dest='graphimg_file', type=str,
+    parser.add_argument('-f', dest='graphimg_file', type=Path,
                         help="Save graph as an image (png)")
     return parser.parse_args()
 
 
-def read_fastq(fastq_file):
+def read_fastq(fastq_file: Path) -> Iterator[str]:
     """Extract reads from fastq files.
 
-    :param fastq_file: (str) Path to the fastq file.
+    :param fastq_file: (Path) Path to the fastq file.
     :return: A generator object that iterate the read sequences. 
     """
     pass
 
 
-def cut_kmer(read, kmer_size):
+def cut_kmer(read: str, kmer_size: int) -> Iterator[str]:
     """Cut read into kmers of size kmer_size.
     
     :param read: (str) Sequence of a read.
-    :return: A generator object that iterate the kmers of of size kmer_size.
+    :return: A generator object that provides the kmers (str) of size kmer_size.
     """
     pass
 
 
-def build_kmer_dict(fastq_file, kmer_size):
+def build_kmer_dict(fastq_file: Path, kmer_size:int) -> Dict[str, int]:
     """Build a dictionnary object of all kmer occurrences in the fastq file
 
     :param fastq_file: (str) Path to the fastq file.
@@ -102,7 +105,7 @@ def build_kmer_dict(fastq_file, kmer_size):
     pass
 
 
-def build_graph(kmer_dict):
+def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     """Build the debruijn graph
 
     :param kmer_dict: A dictionnary object that identify all kmer occurrences.
@@ -111,7 +114,7 @@ def build_graph(kmer_dict):
     pass
 
 
-def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
+def remove_paths(graph: DiGraph, path_list: List[List[str]], delete_entry_node: bool, delete_sink_node: bool) -> DiGraph:
     """Remove a list of path in a graph. A path is set of connected node in
     the graph
 
@@ -124,8 +127,8 @@ def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
     pass
 
 
-def select_best_path(graph, path_list, path_length, weight_avg_list, 
-                     delete_entry_node=False, delete_sink_node=False):
+def select_best_path(graph: DiGraph, path_list: List[List[str]], path_length: List[int], weight_avg_list: List[float], 
+                     delete_entry_node: bool=False, delete_sink_node: bool=False) -> DiGraph:
     """Select the best path between different paths
 
     :param graph: (nx.DiGraph) A directed graph object
@@ -138,7 +141,8 @@ def select_best_path(graph, path_list, path_length, weight_avg_list,
     """
     pass
 
-def path_average_weight(graph, path):
+
+def path_average_weight(graph: DiGraph, path: List[str]) -> float:
     """Compute the weight of a path
 
     :param graph: (nx.DiGraph) A directed graph object
@@ -147,7 +151,8 @@ def path_average_weight(graph, path):
     """
     return statistics.mean([d["weight"] for (u, v, d) in graph.subgraph(path).edges(data=True)])
 
-def solve_bubble(graph, ancestor_node, descendant_node):
+
+def solve_bubble(graph: DiGraph, ancestor_node: str, descendant_node: str) -> DiGraph:
     """Explore and solve bubble issue
 
     :param graph: (nx.DiGraph) A directed graph object
@@ -157,7 +162,8 @@ def solve_bubble(graph, ancestor_node, descendant_node):
     """
     pass
 
-def simplify_bubbles(graph):
+
+def simplify_bubbles(graph: DiGraph) -> DiGraph:
     """Detect and explode bubbles
 
     :param graph: (nx.DiGraph) A directed graph object
@@ -165,23 +171,28 @@ def simplify_bubbles(graph):
     """
     pass
 
-def solve_entry_tips(graph, starting_nodes):
+
+def solve_entry_tips(graph: DiGraph, starting_nodes: List[str]) -> DiGraph:
     """Remove entry tips
 
     :param graph: (nx.DiGraph) A directed graph object
+    :param starting_nodes: (list) A list of starting nodes
     :return: (nx.DiGraph) A directed graph object
     """
     pass
 
-def solve_out_tips(graph, ending_nodes):
+
+def solve_out_tips(graph: DiGraph, ending_nodes: List[str]) -> DiGraph:
     """Remove out tips
 
     :param graph: (nx.DiGraph) A directed graph object
+    :param ending_nodes: (list) A list of ending nodes
     :return: (nx.DiGraph) A directed graph object
     """
     pass
 
-def get_starting_nodes(graph):
+
+def get_starting_nodes(graph: DiGraph) -> List[str]:
     """Get nodes without predecessors
 
     :param graph: (nx.DiGraph) A directed graph object
@@ -189,7 +200,8 @@ def get_starting_nodes(graph):
     """
     pass
 
-def get_sink_nodes(graph):
+
+def get_sink_nodes(graph: DiGraph) -> List[str]:
     """Get nodes without successors
 
     :param graph: (nx.DiGraph) A directed graph object
@@ -197,7 +209,8 @@ def get_sink_nodes(graph):
     """
     pass
 
-def get_contigs(graph, starting_nodes, ending_nodes):
+
+def get_contigs(graph: DiGraph, starting_nodes: List[str], ending_nodes: List[str]) -> List[List[str, int]]:
     """Extract the contigs from the graph
 
     :param graph: (nx.DiGraph) A directed graph object 
@@ -207,20 +220,21 @@ def get_contigs(graph, starting_nodes, ending_nodes):
     """
     pass
 
-def save_contigs(contigs_list, output_file):
+
+def save_contigs(contigs_list: List[str], output_file: Path) -> None:
     """Write all contigs in fasta format
 
     :param contig_list: (list) List of [contiguous sequence and their length]
-    :param output_file: (str) Path to the output file
+    :param output_file: (Path) Path to the output file
     """
     pass
 
 
-def draw_graph(graph, graphimg_file): # pragma: no cover
+def draw_graph(graph: DiGraph, graphimg_file: Path) -> None: # pragma: no cover
     """Draw the graph
 
     :param graph: (nx.DiGraph) A directed graph object
-    :param graphimg_file: (str) Path to the output file
+    :param graphimg_file: (Path) Path to the output file
     """                                   
     fig, ax = plt.subplots()
     elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] > 3]
@@ -236,13 +250,13 @@ def draw_graph(graph, graphimg_file): # pragma: no cover
                            edge_color='b', style='dashed')
     #nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
     # save image
-    plt.savefig(graphimg_file)
+    plt.savefig(graphimg_file.resolve())
 
 
 #==============================================================
 # Main program
 #==============================================================
-def main(): # pragma: no cover
+def main() -> None: # pragma: no cover
     """
     Main program function
     """

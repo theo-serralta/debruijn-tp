@@ -3,7 +3,9 @@ import pytest
 import os
 import networkx as nx
 import statistics
+from pathlib import Path
 from .context import debruijn
+from debruijn import path_average_weight
 from debruijn import remove_paths
 from debruijn import select_best_path
 from debruijn import solve_bubble
@@ -12,6 +14,11 @@ from debruijn import solve_entry_tips
 from debruijn import solve_out_tips
 
 
+def test_path_weight():
+    graph = nx.DiGraph()
+    graph.add_weighted_edges_from([(1, 2, 5), (3, 2, 10), (2, 4, 10), (4, 5, 3), 
+                                   (5, 6, 10), (5, 7, 10)])
+    assert path_average_weight(graph, [1, 2, 4, 5] ) == 6.0
 
 def test_remove_paths():
     graph_1 = nx.DiGraph()
