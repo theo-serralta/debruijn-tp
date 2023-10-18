@@ -210,7 +210,7 @@ def get_sink_nodes(graph: DiGraph) -> List[str]:
     pass
 
 
-def get_contigs(graph: DiGraph, starting_nodes: List[str], ending_nodes: List[str]) -> List[List[str, int]]:
+def get_contigs(graph: DiGraph, starting_nodes: List[str], ending_nodes: List[str]) -> List:
     """Extract the contigs from the graph
 
     :param graph: (nx.DiGraph) A directed graph object 
