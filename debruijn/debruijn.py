@@ -176,7 +176,24 @@ def remove_paths(
     :param delete_sink_node: (boolean) True->We remove the last node of a path
     :return: (nx.DiGraph) A directed graph object
     """
-    pass
+    for path in path_list:
+        if delete_entry_node and delete_sink_node:
+            # Supprimer tous les nœuds
+            nodes_to_remove = path
+        elif delete_entry_node:
+            # Supprimer tous les nœuds sauf le dernier
+            nodes_to_remove = path[:-1]
+        elif delete_sink_node:
+            # Supprimer tous les nœuds sauf le premier
+            nodes_to_remove = path[1:]
+        else:
+            # Supprimer tous les nœuds sauf le premier et le dernier
+            nodes_to_remove = path[1:-1]
+
+        # Supprimer les nœuds spécifiés du graphe
+        graph.remove_nodes_from(nodes_to_remove)
+    
+    return graph
 
 
 def select_best_path(
@@ -352,6 +369,9 @@ def main() -> None:  # pragma: no cover
     # Étape 5 : Sauvegarder les contigs dans un fichier FASTA
     save_contigs(contigs, args.output_file)
 
+    # Optionnel : Générer une image du graphe
+    #if args.graphimg_file:
+     #   draw_graph(graph, args.graphimg_file)
 
 if __name__ == "__main__":  # pragma: no cover
     main()
