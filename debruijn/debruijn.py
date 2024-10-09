@@ -475,43 +475,50 @@ def draw_graph(graph: DiGraph, graphimg_file: Path) -> None:  # pragma: no cover
 # ==============================================================
 # Main program
 # ==============================================================
-def main() -> None:  # pragma: no cover
+def main() -> None:
     """
-    Main program function
+    Main program function.
     """
     print("Starting program")
-    # Récupérer les arguments
+    # Retrieve arguments
     args = get_arguments()
 
-    # Étape 1 : Construire le dictionnaire de k-mers
+    # Step 1: Build k-mer dictionary
     kmer_dict = build_kmer_dict(args.fastq_file, args.kmer_size)
 
-    # Étape 2 : Construire le graphe de De Bruijn
+    # Step 2: Build De Bruijn graph
     graph = build_graph(kmer_dict)
 
-    # Étape 3 : Identifier les nœuds d'entrée et de sortie
+    # Step 3: Identify starting and ending nodes
     starting_nodes = get_starting_nodes(graph)
     ending_nodes = get_sink_nodes(graph)
 
-    # Étape 4 : Simplification du graphe
-    # Résoudre les bulles
+    # Step 4: Simplify the graph
+    # Resolve bubbles
     graph = simplify_bubbles(graph)
-    
-    # Résoudre les pointes d'entrée
+
+    # Update starting and ending nodes after simplification
+    starting_nodes = get_starting_nodes(graph)
+    ending_nodes = get_sink_nodes(graph)
+
+    # Resolve entry tips
     graph = solve_entry_tips(graph, starting_nodes)
-    
-    # Résoudre les pointes de sortie
+
+    # Update ending nodes after resolving entry tips
+    ending_nodes = get_sink_nodes(graph)
+
+    # Resolve out tips
     graph = solve_out_tips(graph, ending_nodes)
 
-    # Étape 5 : Extraire les contigs
+    # Step 5: Extract contigs
     contigs = get_contigs(graph, starting_nodes, ending_nodes)
 
-    # Étape 6 : Sauvegarder les contigs dans un fichier FASTA
+    # Step 6: Save contigs to a FASTA file
     save_contigs(contigs, args.output_file)
 
-    # Optionnel : Générer une image du graphe
-    # if args.graphimg_file:
-    #     draw_graph(graph, args.graphimg_file)
+    # Optional: Generate an image of the graph
+    if args.graphimg_file:
+        draw_graph(graph, args.graphimg_file)
 
 if __name__ == "__main__":  # pragma: no cover
     main()
