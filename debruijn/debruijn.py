@@ -495,11 +495,16 @@ def main() -> None:
     # Resolve entry tips
     graph = solve_entry_tips(graph, starting_nodes)
 
-    # Update ending nodes after resolving entry tips
+    # Update starting and ending nodes after resolving entry tips
+    starting_nodes = get_starting_nodes(graph)
     ending_nodes = get_sink_nodes(graph)
 
     # Resolve out tips
     graph = solve_out_tips(graph, ending_nodes)
+
+    # Update starting and ending nodes after resolving out tips
+    starting_nodes = get_starting_nodes(graph)
+    ending_nodes = get_sink_nodes(graph)
 
     # Step 5: Extract contigs
     contigs = get_contigs(graph, starting_nodes, ending_nodes)
