@@ -112,7 +112,6 @@ def read_fastq(fastq_file: Path) -> Iterator[str]:
             if not sequence:  # Fin du fichier
                 break
             yield sequence
-    pass
 
 
 def cut_kmer(read: str, kmer_size: int) -> Iterator[str]:
@@ -123,7 +122,6 @@ def cut_kmer(read: str, kmer_size: int) -> Iterator[str]:
     """
     for i in range(len(read) - kmer_size + 1):
         yield read[i:i + kmer_size]
-    pass
 
 
 def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
@@ -132,7 +130,18 @@ def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
     :param fastq_file: (str) Path to the fastq file.
     :return: A dictionnary object that identify all kmer occurrences.
     """
-    pass
+    kmer_dict = {}
+    
+    # Lire les séquences du fichier FASTQ
+    for read in read_fastq(fastq_file):
+        # Pour chaque k-mer dans la séquence de lecture
+        for kmer in cut_kmer(read, kmer_size):
+            if kmer in kmer_dict:
+                kmer_dict[kmer] += 1
+            else:
+                kmer_dict[kmer] = 1
+    
+    return kmer_dict
 
 
 def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
