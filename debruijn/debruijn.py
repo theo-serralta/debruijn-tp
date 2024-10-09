@@ -225,9 +225,6 @@ def select_best_path(
         # Étape 3 : Choix aléatoire si tous les critères sont identiques
         best_index = randint(0, len(path_list) - 1)
 
-    # Conserver uniquement le meilleur chemin
-    best_path = path_list[best_index]
-
     # Identifier les chemins à supprimer
     paths_to_remove = [path for i, path in enumerate(path_list) if i != best_index]
 
@@ -257,8 +254,24 @@ def solve_bubble(graph: DiGraph, ancestor_node: str, descendant_node: str) -> Di
     :param descendant_node: (str) A downstream node in the graph
     :return: (nx.DiGraph) A directed graph object
     """
-    pass
+    # Trouver tous les chemins simples entre l'ancêtre et le descendant
+    path_list = list(all_simple_paths(graph, ancestor_node, descendant_node))
 
+    # Calculer la longueur de chaque chemin et le poids moyen
+    path_length = [len(path) for path in path_list]
+    weight_avg_list = [path_average_weight(graph, path) for path in path_list]
+
+    # Appeler select_best_path pour conserver le meilleur chemin
+    graph = select_best_path(
+        graph,
+        path_list,
+        path_length,
+        weight_avg_list,
+        delete_entry_node=False,
+        delete_sink_node=False
+    )
+
+    return graph
 
 def simplify_bubbles(graph: DiGraph) -> DiGraph:
     """Detect and explode bubbles
@@ -352,10 +365,10 @@ def draw_graph(graph: DiGraph, graphimg_file: Path) -> None:  # pragma: no cover
     # print(elarge)
     # Draw the graph with networkx
     # pos=nx.spring_layout(graph)
-    pos = nx.random_layout(graph)
-    nx.draw_networkx_nodes(graph, pos, node_size=6)
-    nx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
-    nx.draw_networkx_edges(
+    pos = random_layout(graph)
+    networkx.draw_networkx_nodes(graph, pos, node_size=6)
+    networkx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
+    networkx.draw_networkx_edges(
         graph, pos, edgelist=esmall, width=6, alpha=0.5, edge_color="b", style="dashed"
     )
     # nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
