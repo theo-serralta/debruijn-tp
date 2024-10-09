@@ -121,7 +121,8 @@ def cut_kmer(read: str, kmer_size: int) -> Iterator[str]:
     :param read: (str) Sequence of a read.
     :return: A generator object that provides the kmers (str) of size kmer_size.
     """
-    
+    for i in range(len(read) - kmer_size + 1):
+        yield read[i:i + kmer_size]
     pass
 
 
