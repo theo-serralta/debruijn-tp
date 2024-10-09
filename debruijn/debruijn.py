@@ -279,8 +279,29 @@ def simplify_bubbles(graph: DiGraph) -> DiGraph:
     :param graph: (nx.DiGraph) A directed graph object
     :return: (nx.DiGraph) A directed graph object
     """
-    pass
-
+    # Parcourir chaque noeud du graphe pour identifier les bulles
+    for node in graph.nodes:
+        predecessors = list(graph.predecessors(node))
+        
+        # Si le noeud a plus d'un prédécesseur, il pourrait y avoir une bulle
+        if len(predecessors) > 1:
+            # Générer les combinaisons de prédécesseurs sans itertools
+            for i in range(len(predecessors)):
+                for j in range(i + 1, len(predecessors)):
+                    pred1, pred2 = predecessors[i], predecessors[j]
+                    
+                    # Trouver l'ancêtre commun le plus proche des deux prédécesseurs
+                    ancestor = lowest_common_ancestor(graph, pred1, pred2)
+                    
+                    # Si un ancêtre commun est trouvé, nous avons détecté une bulle
+                    if ancestor is not None:
+                        # Résoudre la bulle entre cet ancêtre et le noeud
+                        graph = solve_bubble(graph, ancestor, node)
+                        # Appel récursif pour vérifier si d'autres bulles subsistent
+                        return simplify_bubbles(graph)
+    
+    # Retourner le graphe une fois toutes les bulles résolues
+    return graph
 
 def solve_entry_tips(graph: DiGraph, starting_nodes: List[str]) -> DiGraph:
     """Remove entry tips
