@@ -333,15 +333,24 @@ def main() -> None:  # pragma: no cover
     """
     Main program function
     """
-    # Get arguments
+    # Récupérer les arguments
     args = get_arguments()
 
-    # Fonctions de dessin du graphe
-    # A decommenter si vous souhaitez visualiser un petit
-    # graphe
-    # Plot the graph
-    # if args.graphimg_file:
-    #     draw_graph(graph, args.graphimg_file)
+    # Étape 1 : Construire le dictionnaire de k-mers
+    kmer_dict = build_kmer_dict(args.fastq_file, args.kmer_size)
+
+    # Étape 2 : Construire le graphe de De Bruijn
+    graph = build_graph(kmer_dict)
+
+    # Étape 3 : Identifier les nœuds d'entrée et de sortie
+    starting_nodes = get_starting_nodes(graph)
+    ending_nodes = get_sink_nodes(graph)
+
+    # Étape 4 : Extraire les contigs
+    contigs = get_contigs(graph, starting_nodes, ending_nodes)
+
+    # Étape 5 : Sauvegarder les contigs dans un fichier FASTA
+    save_contigs(contigs, args.output_file)
 
 
 if __name__ == "__main__":  # pragma: no cover
