@@ -35,7 +35,7 @@ from random import randint
 import statistics
 import textwrap
 import matplotlib.pyplot as plt
-from typing import Iterator, Dict, List
+from typing import Iterator, Dict, List, Any
 
 matplotlib.use("Agg")
 
@@ -303,15 +303,52 @@ def simplify_bubbles(graph: DiGraph) -> DiGraph:
     # Retourner le graphe une fois toutes les bulles résolues
     return graph
 
-def solve_entry_tips(graph: DiGraph, starting_nodes: List[str]) -> DiGraph:
-    """Remove entry tips
+def solve_entry_tips(graph: DiGraph, starting_nodes: List[Any]) -> DiGraph:
+    """Remove entry tips from the graph.
 
-    :param graph: (nx.DiGraph) A directed graph object
-    :param starting_nodes: (list) A list of starting nodes
-    :return: (nx.DiGraph) A directed graph object
+    :param graph: (nx.DiGraph) A directed graph object.
+    :param starting_nodes: (list) A list of starting nodes.
+    :return: (nx.DiGraph) A directed graph object without entry tips.
     """
-    pass
-
+    # For all nodes in the graph
+    for node in graph.nodes:
+        predecessors = list(graph.predecessors(node))
+        # If node has more than one predecessor
+        if len(predecessors) > 1:
+            # Initialize lists to collect paths
+            path_list = []
+            path_length = []
+            weight_avg_list = []
+            valid_paths = False
+            # For each starting node
+            for start_node in starting_nodes:
+                # Check if there is a path from start_node to node
+                if has_path(graph, start_node, node):
+                    # Get all simple paths from start_node to node
+                    paths = list(all_simple_paths(graph, start_node, node))
+                    for path in paths:
+                        if len(path) >= 2:
+                            path_list.append(path)
+                            path_length.append(len(path))
+                            weight_avg_list.append(path_average_weight(graph, path))
+                            valid_paths = True
+            if valid_paths and len(path_list) > 1:
+                # We have multiple paths from starting nodes to this node
+                # Select the best path and remove the others
+                graph = select_best_path(
+                    graph,
+                    path_list,
+                    path_length,
+                    weight_avg_list,
+                    delete_entry_node=True,
+                    delete_sink_node=False
+                )
+                # Update starting nodes
+                starting_nodes = get_starting_nodes(graph)
+                # Restart the process
+                return solve_entry_tips(graph, starting_nodes)
+    # No more entry tips to remove
+    return graph
 
 def solve_out_tips(graph: DiGraph, ending_nodes: List[str]) -> DiGraph:
     """Remove out tips
@@ -320,7 +357,45 @@ def solve_out_tips(graph: DiGraph, ending_nodes: List[str]) -> DiGraph:
     :param ending_nodes: (list) A list of ending nodes
     :return: (nx.DiGraph) A directed graph object
     """
-    pass
+    # For all nodes in the graph
+    for node in graph.nodes:
+        successors = list(graph.successors(node))
+        # If node has more than one successor
+        if len(successors) > 1:
+            # Initialize lists to collect paths
+            path_list = []
+            path_length = []
+            weight_avg_list = []
+            valid_paths = False
+            # For each ending node
+            for end_node in ending_nodes:
+                # Check if there is a path from current node to end_node
+                if has_path(graph, node, end_node):
+                    # Get all simple paths from current node to end_node
+                    paths = list(all_simple_paths(graph, node, end_node))
+                    for path in paths:
+                        if len(path) >= 2:
+                            path_list.append(path)
+                            path_length.append(len(path))
+                            weight_avg_list.append(path_average_weight(graph, path))
+                            valid_paths = True
+            if valid_paths and len(path_list) > 1:
+                # We have multiple paths from this node to ending nodes
+                # Select the best path and remove the others
+                graph = select_best_path(
+                    graph,
+                    path_list,
+                    path_length,
+                    weight_avg_list,
+                    delete_entry_node=False,
+                    delete_sink_node=True
+                )
+                # Update ending nodes
+                ending_nodes = get_sink_nodes(graph)
+                # Restart the process
+                return solve_out_tips(graph, ending_nodes)
+    # No more out tips to remove
+    return graph
 
 
 def get_starting_nodes(graph: DiGraph) -> List[str]:
@@ -404,6 +479,7 @@ def main() -> None:  # pragma: no cover
     """
     Main program function
     """
+    print("Starting program")
     # Récupérer les arguments
     args = get_arguments()
 
@@ -417,15 +493,25 @@ def main() -> None:  # pragma: no cover
     starting_nodes = get_starting_nodes(graph)
     ending_nodes = get_sink_nodes(graph)
 
-    # Étape 4 : Extraire les contigs
+    # Étape 4 : Simplification du graphe
+    # Résoudre les bulles
+    graph = simplify_bubbles(graph)
+    
+    # Résoudre les pointes d'entrée
+    graph = solve_entry_tips(graph, starting_nodes)
+    
+    # Résoudre les pointes de sortie
+    graph = solve_out_tips(graph, ending_nodes)
+
+    # Étape 5 : Extraire les contigs
     contigs = get_contigs(graph, starting_nodes, ending_nodes)
 
-    # Étape 5 : Sauvegarder les contigs dans un fichier FASTA
+    # Étape 6 : Sauvegarder les contigs dans un fichier FASTA
     save_contigs(contigs, args.output_file)
 
     # Optionnel : Générer une image du graphe
-    #if args.graphimg_file:
-     #   draw_graph(graph, args.graphimg_file)
+    # if args.graphimg_file:
+    #     draw_graph(graph, args.graphimg_file)
 
 if __name__ == "__main__":  # pragma: no cover
     main()
