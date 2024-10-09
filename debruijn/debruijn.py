@@ -16,28 +16,26 @@
 import argparse
 import os
 import sys
+import random
+import statistics
+import textwrap
 from pathlib import Path
+from random import randint
+from typing import Iterator, Dict, List, Any
+import matplotlib
+import matplotlib.pyplot as plt
 from networkx import (
     DiGraph,
     all_simple_paths,
     lowest_common_ancestor,
     has_path,
     random_layout,
-    draw,
-    spring_layout,
 )
-import matplotlib
-from operator import itemgetter
-import random
+from networkx.drawing.nx_pylab import draw_networkx_nodes, draw_networkx_edges
 
-random.seed(9001)
-from random import randint
-import statistics
-import textwrap
-import matplotlib.pyplot as plt
-from typing import Iterator, Dict, List, Any
 
 matplotlib.use("Agg")
+random.seed(9001)
 
 __author__ = "Theo Serralta"
 __copyright__ = "Universite Paris Diderot"
@@ -47,6 +45,7 @@ __version__ = "1.0.0"
 __maintainer__ = "Theo Serralta"
 __email__ = "theo.serralta@gmail.com"
 __status__ = "Developpement"
+
 
 
 def isfile(path: str) -> Path:  # pragma: no cover
@@ -131,7 +130,6 @@ def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
     :return: A dictionnary object that identify all kmer occurrences.
     """
     kmer_dict = {}
-    
     # Lire les séquences du fichier FASTQ
     for read in read_fastq(fastq_file):
         # Pour chaque k-mer dans la séquence de lecture
@@ -140,7 +138,6 @@ def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
                 kmer_dict[kmer] += 1
             else:
                 kmer_dict[kmer] = 1
-    
     return kmer_dict
 
 
@@ -151,15 +148,12 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     :return: A directed graph (nx) of all kmer substring and weight (occurrence).
     """
     graph = DiGraph()
-    
     # Construire les arcs avec poids basés sur les occurrences de chaque k-mer
     for kmer, count in kmer_dict.items():
         prefix = kmer[:-1]  # Préfixe du k-mer
         suffix = kmer[1:]   # Suffixe du k-mer
         graph.add_edge(prefix, suffix, weight=count)
-    
     return graph
-
 
 def remove_paths(
     graph: DiGraph,
@@ -192,7 +186,6 @@ def remove_paths(
 
         # Supprimer les nœuds spécifiés du graphe
         graph.remove_nodes_from(nodes_to_remove)
-    
     return graph
 
 
@@ -282,24 +275,20 @@ def simplify_bubbles(graph: DiGraph) -> DiGraph:
     # Parcourir chaque noeud du graphe pour identifier les bulles
     for node in graph.nodes:
         predecessors = list(graph.predecessors(node))
-        
         # Si le noeud a plus d'un prédécesseur, il pourrait y avoir une bulle
         if len(predecessors) > 1:
             # Générer les combinaisons de prédécesseurs sans itertools
             for i in range(len(predecessors)):
                 for j in range(i + 1, len(predecessors)):
                     pred1, pred2 = predecessors[i], predecessors[j]
-                    
                     # Trouver l'ancêtre commun le plus proche des deux prédécesseurs
                     ancestor = lowest_common_ancestor(graph, pred1, pred2)
-                    
                     # Si un ancêtre commun est trouvé, nous avons détecté une bulle
                     if ancestor is not None:
                         # Résoudre la bulle entre cet ancêtre et le noeud
                         graph = solve_bubble(graph, ancestor, node)
                         # Appel récursif pour vérifier si d'autres bulles subsistent
                         return simplify_bubbles(graph)
-    
     # Retourner le graphe une fois toutes les bulles résolues
     return graph
 
@@ -448,29 +437,31 @@ def save_contigs(contigs_list: List[str], output_file: Path) -> None:
             f.write(textwrap.fill(contig, width=80) + "\n")
 
 
-def draw_graph(graph: DiGraph, graphimg_file: Path) -> None:  # pragma: no cover
+def draw_graph(graph: DiGraph, graphimg_file: Path) -> None:
     """Draw the graph
 
-    :param graph: (nx.DiGraph) A directed graph object
+    :param graph: (DiGraph) A directed graph object
     :param graphimg_file: (Path) Path to the output file
     """
     fig, ax = plt.subplots()
     elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d["weight"] > 3]
-    # print(elarge)
     esmall = [(u, v) for (u, v, d) in graph.edges(data=True) if d["weight"] <= 3]
-    # print(elarge)
-    # Draw the graph with networkx
-    # pos=nx.spring_layout(graph)
-    pos = random_layout(graph)
-    networkx.draw_networkx_nodes(graph, pos, node_size=6)
-    networkx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
-    networkx.draw_networkx_edges(
-        graph, pos, edgelist=esmall, width=6, alpha=0.5, edge_color="b", style="dashed"
-    )
-    # nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
-    # save image
-    plt.savefig(graphimg_file.resolve())
 
+    pos = random_layout(graph)
+    draw_networkx_nodes(graph, pos, node_size=6, ax=ax)
+    draw_networkx_edges(graph, pos, edgelist=elarge, width=6, ax=ax)
+    draw_networkx_edges(
+        graph,
+        pos,
+        edgelist=esmall,
+        width=6,
+        alpha=0.5,
+        edge_color="b",
+        style="dashed",
+        ax=ax,
+    )
+    # Save the figure associated with 'fig'
+    fig.savefig(graphimg_file.resolve())
 
 # ==============================================================
 # Main program
